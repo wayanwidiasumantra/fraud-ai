@@ -148,3 +148,107 @@ def plot_report(data):
 
     return(result)
 
+def plot_months_cust_group(data1):
+
+    df_fraud = data[data.fraud_reported == 'Y'].pivot_table(index='police_report_available',values='fraud_reported',aggfunc='count')
+    
+    df_nfraud = data[data.fraud_reported == 'N'].pivot_table(index='police_report_available',values='fraud_reported',aggfunc='count')
+
+    # ---- Police Report Availability
+
+    ax = pd.concat([df_fraud,df_nfraud],axis=1).plot.bar(stacked = 'police_report_available',color =['#c34454','#53a4b1'],title = "Police Report Availability", figsize=(8, 6))
+    
+    # Plot Configuration
+    plt.legend(['fraud','not fraud'], bbox_to_anchor=(1, 1))
+    plt.xlabel("police report available'")
+
+    # Save png file to IO buffer
+    figfile = BytesIO()
+    plt.savefig(figfile, format='png')
+    figfile.seek(0)
+    figdata_png = base64.b64encode(figfile.getvalue())
+    result = str(figdata_png)[2:-1]
+
+    return(result)
+	
+def plot_months_cust_group(data1):
+    
+    # ---- Months group of customer
+
+	def months_cust_grouping(data1):
+		if(data1.months_as_customer <= 3):
+			return '1 - 3'
+		elif(data1.months_as_customer > 3 and data1.months_as_customer <= 6) : 
+			return '4 - 6'
+		elif(data1.months_as_customer > 6 and data1.months_as_customer <= 9) : 
+			return '7 - 9'
+		elif(data1.months_as_customer > 9 and data1.months_as_customer <= 12) : 
+			return '10 - 12'
+		else : 
+			return '12+'
+	
+	data1['months_cust_group'] = data1.apply(months_cust_grouping,axis = 1)
+
+	#Adjust category order
+	months_cust_group_order = ['1 - 3', '4 - 6', '7 - 9', '10 - 12','12+']
+	data1['months_cust_group'] = pd.Categorical(data1['months_cust_group'], categories = months_cust_group_order, ordered=True)
+
+	data1.police_report_available = data1.police_report_available.replace('?', 'NO')
+	data1.police_report_available
+
+	Analisis1 = pd.crosstab(index=data1['months_cust_group'],columns=data1['police_report_available'],values=data1['months_cust_group'],aggfunc='count').fillna(0)
+	Analisis1[0:4].plot(kind='barh')
+	plt.xlabel("Jumlah Klaim")
+	plt.ylabel("Kelompok Lama Bulan Bergabung")
+	
+	#ax = age_profile.plot.barh(title = "Fraud Reported by Age group", 
+	#legend= False, 
+	#color = '#c34454', 
+	#figsize = (8,6))
+
+	# Save png file to IO buffer
+	figfile = BytesIO()
+	plt.savefig(figfile, format='png', transparent=True)
+	figfile.seek(0)
+	figdata_png = base64.b64encode(figfile.getvalue())
+	result = str(figdata_png)[2:-1]
+	return(result)
+	
+def plot_lap_polisi(data2):
+
+	data2.police_report_available = data2.police_report_available.replace('?', 'NO')
+	data2.police_report_available
+	
+	lap_polisi =pd.crosstab(index=data2['police_report_available'],columns=data2['fraud_reported'],values=data2['fraud_reported'],aggfunc='count')
+	lap_polisi
+
+	lap_polisi.plot(kind='bar')
+
+	##plt.xlabel("Jumlah Klaim")
+	##plt.ylabel("Kelompok Lama Bulan Bergabung")	
+	
+	# Save png file to IO buffer
+	figfile = BytesIO()
+	plt.savefig(figfile, format='png')
+	figfile.seek(0)
+	figdata_png = base64.b64encode(figfile.getvalue())
+	result = str(figdata_png)[2:-1]
+	return(result)
+
+def plot_saksi(data2):
+
+	saksi = pd.crosstab(index=data2['witnesses'],columns=data2['fraud_reported'],values=data2['fraud_reported'],aggfunc='count')
+	saksi
+
+	saksi.plot(kind='barh', title='Jumlah Saksi Berdasarkan Ada/Tidak nya Fraud Report')
+
+	##plt.xlabel("Jumlah Klaim")
+	##plt.ylabel("Kelompok Lama Bulan Bergabung")	
+	
+	# Save png file to IO buffer
+	figfile = BytesIO()
+	plt.savefig(figfile, format='png')
+	figfile.seek(0)
+	figdata_png = base64.b64encode(figfile.getvalue())
+	result = str(figdata_png)[2:-1]
+	return(result)
